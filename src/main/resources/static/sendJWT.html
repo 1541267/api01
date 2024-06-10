@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<div class="result">
+
+</div>
+
+<button class="btn1"> CALL SERVER</button>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+
+    const callServer = async() => {
+        console.log("call server1....")
+
+        const accessToken = localStorage.getItem("accessToken")
+
+        if (!accessToken) {
+            throw 'Cannot Find Access Token'
+        }
+        //840p Authorization Header에 bearer 토큰 전달
+        const authHeader = {"Authorization": `Bearer ${accessToken}`}
+
+        try {
+            const res = await axios.get("http://localhost:9000/api/sample/doA", {headers: authHeader})
+
+            return res.data
+
+            //     //841p Expired Token 예외 처리
+            // } catch (err) {
+            //     if (err.response.data.msg === 'Expired Token') {
+            //         console.log("Refresh Your Token")
+            //         throw err.response.data.msg
+            //     }
+
+        } catch (err) {     //842p Expired Token 발생시 refreshToken 호출
+            if (err.response.data.msg === 'Expired Token') {
+                console.log("Refresh Your Token")
+                try {
+                    await callRefresh() //refreshToken 호출
+                    console.log("new Tokens....saved...") // 새로운 토큰 저장후 다시 원래 기능 호출
+                    return callServer()
+
+                } catch (refreshErr) {
+                    throw refreshErr.response.data.msg
+                }
+            }
+        }
+    }
+
+    const callRefresh = async () => {
+
+        const accessToken = localStorage.getItem("accessToken")
+        const refreshToken = localStorage.getItem("refreshToken")
+
+        const tokens = {accessToken, refreshToken}
+
+        const res = await axios.post("http://localhost:9000/refreshToken", tokens)
+
+        localStorage.setItem("accessToken", res.data.accessToken)
+        localStorage.setItem("refreshToken", res.data.refreshToken)
+    }
+
+    const resultDiv = document.querySelector(".result")
+
+    document.querySelector(".btn1").addEventListener("click", () => {
+
+        callServer().then(result => {
+            console.log(result)
+        }).catch(error => {
+            alert(error)
+        })
+    }, false)
+
+
+</script>
+</body>
+</html>

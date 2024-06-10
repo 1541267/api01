@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+
+<button class="btn1">generateToken</button>
+
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+
+    document.querySelector(".btn1").addEventListener("click", () => {
+        const data = {mid:"apiuser10", mpw:"1"}
+
+        axios.post("http://localhost:9000/generateToken", data).then(res => {
+            const accessToken = res.data.accessToken
+            const refreshToken = res.data.refreshToken
+
+            localStorage.setItem("accessToken", accessToken)
+            localStorage.setItem("refreshToken", refreshToken)
+
+            console.log("accessToken: " + accessToken)
+            console.log("refreshToken: " + refreshToken)
+        })
+    }, false);
+
+</script>
+
+</body>
+</html>
